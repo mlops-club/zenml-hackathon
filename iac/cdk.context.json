@@ -36,5 +36,9 @@
         ]
       }
     ]
+  },
+  "hosted-zone:account=491085404175:domainName=zenml.mlops-club.org:region=us-west-2": {
+    "Id": "/hostedzone/Z06294602217HSCV3Z0OS",
+    "Name": "zenml.mlops-club.org."
   }
 }

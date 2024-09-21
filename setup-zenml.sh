@@ -66,10 +66,12 @@ zenml artifact-store register "s3-store" \
 # ┃         bbee06f52f         │                     │                │               │ thon-bucket                ┃
 # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
+# /zenml-hackathon-repo
+ECR_REPO_URI="491085404175.dkr.ecr.us-west-2.amazonaws.com"
 zenml container-registry register "ecr-docker-image-store" \
     --flavor aws \
     --connector ecr-connector \
-    --uri="$ECR_REGISTRY_URI"
+    --uri=$ECR_REPO_URI
 
 # Successfully connected container registry `ecr-docker-image-store` to the following resources:
 # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -82,7 +84,6 @@ zenml container-registry register "ecr-docker-image-store" \
 zenml stack register "local-s3-ecr" \
     --artifact-store s3-store \
     --container_registry ecr-docker-image-store \
-    --image_builder default \
     --orchestrator default
 
 # Stack 'local-s3-ecr' successfully registered!

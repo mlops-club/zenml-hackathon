@@ -15,6 +15,8 @@ from constructs import Construct
 THIS_DIR = Path(__file__).parent
 USER_DATA_SH_TEMPLATE_FPATH = (THIS_DIR / "./user-data.template.sh").resolve()
 
+BUCKET_NAME = "mlops-club-zeml-hackathon-bucket"
+ECR_REPO_NAME = "zenml-hackathon-repo"
 
 class ZenMLControlPlaneStack(Stack):
     """Stack responsible for creating the running minecraft server on AWS.
@@ -38,6 +40,18 @@ class ZenMLControlPlaneStack(Stack):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        artifacts_bucket = s3.Bucket.from_bucket_name(
+            scope=self,
+            id="ArtifactsBucket",
+            bucket_name=BUCKET_NAME,
+        )
+
+        ecr_repo = ecr.Repository.from_repository_name(
+            scope=self,
+            id="ZenMLHackathonRepo",
+            repository_name=ECR_REPO_NAME,
+        )
 
         _vpc = ec2.Vpc.from_lookup(scope=self, id="DefaultVpc", is_default=True)
 
@@ -65,7 +79,7 @@ class ZenMLControlPlaneStack(Stack):
             description="Allow all outbound traffic",
         )
 
-        # create iam role for ec2 instance using AmazonSSMManagedInstanceCore
+        # create iam role for ec2 instance
         _iam_role = iam.Role(
             scope=self,
             id="ZenMLServerIamRole",
@@ -74,6 +88,31 @@ class ZenMLControlPlaneStack(Stack):
         _iam_role.add_managed_policy(
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
         )
+        
+        # Add S3 permissions
+        _iam_role.add_to_policy(iam.PolicyStatement(
+            actions=[
+                "s3:ListAllMyBuckets",
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+            ],
+            resources=["arn:aws:s3:::*"]
+        ))
+
+        # Add ECR permissions
+        _iam_role.add_to_policy(iam.PolicyStatement(
+            actions=[
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:DescribeImages",
+                "ecr:BatchGetImage",
+            ],
+            resources=["*"]
+        ))
 
         # fill in user data script
         _user_data_script = ec2.UserData.custom(
@@ -95,6 +134,30 @@ class ZenMLControlPlaneStack(Stack):
             security_group=_sg,
             key_name=ssh_key_pair_name,
         )
+
+        # Add the A Record for zenml.mlops-club.io
+        hosted_zone = route53.HostedZone.from_lookup(
+            self, "ZenMLHostedZone", domain_name="zenml.mlops-club.org"
+        )
+
+        route53.ARecord(
+            self,
+            "ZenMLARecord",
+            zone=hosted_zone,
+            target=route53.RecordTarget.from_ip_addresses(_ec2.instance_public_ip),
+            record_name="zenml.mlops-club.org"
+        )
+
+        # Add a new output for the domain
+        cdk.CfnOutput(
+            self,
+            id="ZenMLServerDomain",
+            value="zenml.mlops-club.org",
+            description="The domain name of the ZenML server",
+        )
+
+        ecr_repo.grant_pull_push(_iam_role)
+        artifacts_bucket.grant_read_write(_iam_role)
 
         if custom_top_level_domain_name:
             a_record: route53.ARecord = add_custom_subdomain_to_ec2_ip(

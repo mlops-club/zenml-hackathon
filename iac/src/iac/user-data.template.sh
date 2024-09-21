@@ -47,13 +47,23 @@ services:
     ports:
       - 3306:3306
     environment:
-      - MYSQL_ROOT_PASSWORD=password
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./volumes/mysql/data/:/var/lib/mysql
+      - ./volumes/mysql/backups/:/backups
+      # TODO: mount the mysql state as a volume
+
   zenml:
     image: zenmldocker/zenml-server
     ports:
       - "8080:8080"
     environment:
-      - ZENML_STORE_URL=mysql://root:password@mysql/zenml
+      ZENML_STORE_URL: mysql://root:password@mysql/zenml
+      ZENML_STORE_BACKUP_DIRECTORY: /backups
+      ZENML_STORE_BACKUP_STRATEGY: dump-file
+      ZENML_ENABLE_IMPLICIT_AUTH_METHODS: "true"
+    volumes:
+      - ./volumes/mysql/data/:/var/lib/mysql
     links:
       - mysql
     depends_on:
@@ -61,6 +71,7 @@ services:
     # extra_hosts:
     #   - "host.docker.internal:host-gateway"
     restart: on-failure
+
 EOF
 
 ##########################################
