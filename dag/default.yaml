@@ -1,0 +1,13 @@
+components:
+  artifact_store:
+    configuration: {}
+    flavor: local
+    name: default
+    type: artifact_store
+  orchestrator:
+    configuration: {}
+    flavor: local
+    name: default
+    type: orchestrator
+stack_name: default
+zenml_version: 0.66.0

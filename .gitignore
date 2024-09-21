@@ -1,12 +1,14 @@
 # Python .gitignore template from
 # https://github.com/github/gitignore/blob/main/Python.gitignore
 
+./zenml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+*cdk.out
 # C extensions
 *.so
 

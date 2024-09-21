@@ -1,34 +1,18 @@
-# zenml-hackathon
 
-## Quick start
 
-```bash
-pip install zenml-hackathon
-```
 
-```python
-from hack import ...
-```
+## ZenML OSS vs Metaflow OSS
 
-## Developing/Contributing
+| Feature | ZenML OSS | Metaflow OSS |
+| --- | - | - |
+| Preview Artifacts in the UI | ❌ | ❌ |
+| Arbitrary visualizations in UI |  | ✅ (metaflow cards) |
+| Trigger DAGs from the UI | ❌ | ❌ (seems like not based on [this](https://github.com/Netflix/metaflow-ui/blob/master/README.mds)) |
+| Deploy Models from the UI | ❌ | ❌ |
+| Build and push docker images | ✅ | ❌ (possibly with netflix extensions) |
+| Easy switch from local to cloud | ✅ | ✅ |
+| Run only certain steps on cloud, others locally | ❌ | ✅ |
+| Run DAGs on Airflow | ✅ | ✅ |
+| Run DAGs on Step Functions + AWS Batch | ❌ | ✅ |
+| No limit to number of collaborators | ??? | ✅ |
 
-### System requirements
-
-You will need the following installed on your machine to develop on this codebase
-
-- `make` AKA `cmake`, e.g. `sudo apt-get update -y; sudo apt-get install cmake -y`
-- Python 3.7+, ideally using `pyenv` to easily change between Python versions
-- `git`
-
-### 
-
-```bash
-# clone the repo
-git clone https://github.com/<your github username>/zenml-hackathon.git
-
-# install the dev dependencies
-make install
-
-# run the tests
-make test
-```
